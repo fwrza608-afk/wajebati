@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System Access</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#020604;color:#00ff66;font-family:Tahoma,Arial,sans-serif;min-height:100vh;overflow:hidden}
+  canvas{position:fixed;inset:0;width:100%;height:100%;opacity:.34}
+  .scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent 0 3px,rgba(0,255,80,.035) 4px 5px)}
+  main{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .panel{width:min(720px,100%);border:1px solid #087a37;background:rgba(0,12,5,.91);box-shadow:0 0 35px #00ff6630;border-radius:14px;padding:clamp(22px,5vw,44px);text-align:center}
+  .tag{font:12px monospace;letter-spacing:4px;color:#65ff9c}
+  h1{font-size:clamp(28px,6vw,48px);color:#ff3434;text-shadow:0 0 18px #f003;margin:24px 0 12px}
+  .sub{color:#9cffb9;font-size:15px}
+  .bar{height:9px;border:1px solid #087a37;border-radius:20px;margin:28px 0 12px;overflow:hidden}
+  .fill{height:100%;width:0;background:#00ff66;box-shadow:0 0 15px #00ff66;transition:width .25s}
+  #count{font: bold clamp(42px,9vw,72px) monospace;color:#00ff66;text-shadow:0 0 20px #00ff66;margin:12px}
+  #status{min-height:28px;color:#75ffa4;font:14px monospace}
+  button{border:1px solid #00ff66;background:#00220d;color:#baffce;border-radius:8px;padding:13px 24px;font-size:16px;cursor:pointer;margin-top:18px}
+  button:hover{background:#00451b}
+  #done{display:none;color:#00ff66;font-size:clamp(28px,6vw,42px);font-weight:bold;text-shadow:0 0 18px #00ff66;margin-top:28px}
+  .small{color:#4a9867;font:11px monospace;margin-top:22px}
+  .blink{animation:blink 1s steps(2,start) infinite}
+  @keyframes blink{to{visibility:hidden}}
+</style>
+</head>
+<body>
+<canvas id="matrix"></canvas><div class="scan"></div>
+<main><section class="panel">
+  <div class="tag">SECURE TERMINAL // VISUAL SEQUENCE</div>
+  <h1>تم اختراق الجهاز بنجاح</h1>
+  <div class="sub">جاري تنفيذ المهمة... <span class="blink">_</span></div>
+  <div id="count">2</div>
+  <div class="bar"><div class="fill" id="fill"></div></div>
+  <div id="status">INITIALIZING SYSTEM...</div>
+  
+  <div id="done">تمت المهمة</div>
+  <div class="small">VISUAL EFFECTS ONLY</div>
+</section></main>
+<script>
+const canvas=document.getElementById('matrix'),ctx=canvas.getContext('2d');
+let w,h,cols,drops;
+function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;cols=Math.floor(w/18);drops=Array(cols).fill(1)}
+addEventListener('resize',resize);resize();
+const chars='01アイウエオカキクケコ#$%&<>[]{}';
+function draw(){ctx.fillStyle='rgba(0,0,0,.08)';ctx.fillRect(0,0,w,h);ctx.fillStyle='#00ff66';ctx.font='15px monospace';for(let i=0;i<drops.length;i++){ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*18,drops[i]*18);if(drops[i]*18>h&&Math.random()>.975)drops[i]=0;drops[i]++}requestAnimationFrame(draw)}draw();
+const start=document.getElementById('start'),count=document.getElementById('count'),status=document.getElementById('status'),fill=document.getElementById('fill'),done=document.getElementById('done');
+let audioCtx;
+function beep(freq=660,duration=.09){try{audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;o.type='square';g.gain.value=.035;o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+duration)}catch(e){}}
+async function beginSequence(){
+
+ try{audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();await audioCtx.resume()}catch(e){}
+ const messages=['CONNECTING TO TERMINAL...','SCANNING INTERFACE...','VERIFYING ACCESS...','RUNNING SEQUENCE...','FINALIZING TASK...'];
+ let n=2;count.textContent=n;status.textContent=messages[0];
+ const timer=setInterval(()=>{n--;count.textContent=n;fill.style.width=(((2-n)/2)*100)+'%';status.textContent=messages[Math.min(4,Math.floor((2-n)*2.5))];beep(450+n*35,.08);
+ if(n<=0){clearInterval(timer);count.textContent='✓';status.textContent='SEQUENCE COMPLETE';done.style.display='block';beep(880,.2);setTimeout(()=>beep(1100,.25),180)}
+ },1000);
+}
+window.addEventListener('load', beginSequence);
+</script>
+</body></html>
